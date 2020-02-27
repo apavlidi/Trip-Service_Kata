@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Collections;
 import java.util.List;
+import org.apavlidi.tripservicekata.UserSessionI;
 import org.apavlidi.tripservicekata.exception.UserNotLoggedInException;
 import org.apavlidi.tripservicekata.user.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,20 +25,21 @@ public class TripServiceTest {
 
     @Test
     public void throw_exception_when_not_logged_in() {
-        tripService = new TestableTripServiceNotLoggedIn();
+        tripService = new TestableTripService(new TestableUserSession());
+        loggedInUser = null;
         assertThrows(UserNotLoggedInException.class, () -> tripService.getTripsByUser(user));
     }
 
     @Test
     public void return_no_trips_if_user_is_not_a_friend_with_the_logged_in_user() {
-        tripService = new TestableTripServiceLoggedIn();
+        tripService = new TestableTripService(new TestableUserSession());
         List<Trip> tripsByUser = tripService.getTripsByUser(user);
         assertEquals(0, tripsByUser.size());
     }
 
     @Test
     public void return_no_trips_if_user_has_friends_but_not_the_logged_in_user() {
-        tripService = new TestableTripServiceLoggedIn();
+        tripService = new TestableTripService(new TestableUserSession());
         Trip trip = new Trip();
         user.addTrip(trip);
         user.addFriend(new User());
@@ -46,24 +48,24 @@ public class TripServiceTest {
 
     @Test
     public void return_trips_if_user_is_friend_with_the_logged_in_user() {
-        tripService = new TestableTripServiceLoggedIn();
+        tripService = new TestableTripService(new TestableUserSession());
         Trip trip = new Trip();
         user.addTrip(trip);
         user.addFriend(loggedInUser);
         assertEquals(1, tripService.getTripsByUser(user).size());
     }
 
-    public static class TestableTripServiceNotLoggedIn extends TripService {
+    public class TestableUserSession implements UserSessionI {
 
-        protected User getLoggedInUser() {
-            return null;
+        public User getLoggedUser() {
+            return loggedInUser;
         }
     }
 
-    public class TestableTripServiceLoggedIn extends TripService {
+    public static class TestableTripService extends TripService {
 
-        protected User getLoggedInUser() {
-            return loggedInUser;
+        public TestableTripService(UserSessionI userSession) {
+            super(userSession);
         }
 
         protected List<Trip> findTripsByUser(User user) {

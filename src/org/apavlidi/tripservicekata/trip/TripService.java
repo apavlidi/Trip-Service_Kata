@@ -2,14 +2,20 @@ package org.apavlidi.tripservicekata.trip;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apavlidi.tripservicekata.UserSessionI;
 import org.apavlidi.tripservicekata.exception.UserNotLoggedInException;
 import org.apavlidi.tripservicekata.user.User;
-import org.apavlidi.tripservicekata.user.UserSession;
 
 public class TripService {
 
+    private UserSessionI userSession;
+
+    public TripService(UserSessionI userSession) {
+        this.userSession = userSession;
+    }
+
     public List<Trip> getTripsByUser(User user) throws UserNotLoggedInException {
-        User loggedUser = getLoggedInUser();
+        User loggedUser = userSession.getLoggedUser();;
         if (loggedUser != null) {
             return isFriendWithUser(user, loggedUser) ? findTripsByUser(user) : new ArrayList<>();
         }
@@ -22,10 +28,6 @@ public class TripService {
 
     protected List<Trip> findTripsByUser(User user) {
         return TripDAO.findTripsByUser(user);
-    }
-
-    protected User getLoggedInUser() {
-        return UserSession.getInstance().getLoggedUser();
     }
 
 }
