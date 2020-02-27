@@ -17,7 +17,7 @@ public class TripService {
     }
 
     private boolean isFriendWithUser(User user, User loggedUser) {
-        return user.getFriends().stream().anyMatch(friend -> friend.equals(loggedUser));
+        return user.getFriends().contains(loggedUser);
     }
 
     protected List<Trip> findTripsByUser(User user) {
